@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
-  base: '/',
+  base: '/lotus-bf-frontend-athenalin11/',  // GitHub Pages 倉庫路徑
 
   plugins: [react()],
   resolve: {
