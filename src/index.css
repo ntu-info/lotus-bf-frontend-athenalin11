@@ -1,11 +1,19 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/* 全局響應式基礎設定 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'Helvetica Neue', sans-serif;
+  line-height: 1.65;
+  font-weight: 400;
+  font-size: 16px; /* 增加基礎字體大小 */
+
+  color-scheme: dark;
+  color: rgba(224, 247, 255, 0.95);
+  background-color: #0a1828;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,56 +21,88 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+html {
+  /* 防止水平滾動 */
+  overflow-x: hidden;
+  width: 100%;
+  height: 100%;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  /* 防止水平滾動 */
+  overflow-x: hidden;
+  width: 100%;
   min-height: 100vh;
+  margin: 0;
+  /* 觸控設備優化 */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* 確保所有容器不會超出視窗 */
+#root {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+/* 圖片響應式 */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+/* Canvas 響應式 */
+canvas {
+  max-width: 100%;
+  height: auto !important;
+  display: block;
+}
+
+/* 表格響應式 */
+table {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
+/* 平板橫向 */
+@media (min-width: 768px) and (max-width: 1023px) and (orientation: landscape) {
+  body {
+    font-size: 14px;
   }
 }
+
+/* 手機橫向優化 */
+@media (max-width: 767px) and (orientation: landscape) {
+  .app__header {
+    padding: 12px 20px !important;
+  }
+  
+  .app__title {
+    font-size: 16px !important;
+  }
+  
+  .app__subtitle {
+    font-size: 9px !important;
+  }
+}
+
+/* 超小螢幕 */
+@media (max-width: 374px) {
+  body {
+    font-size: 13px;
+  }
+}
+
+/* 防止文字選取（觸控設備） */
+@media (hover: none) and (pointer: coarse) {
+  button, .btn, [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+

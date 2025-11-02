@@ -1,104 +1,614 @@
+/* App.css - Dark Sci-Fi Medical Laboratory */
 
-/* App.css baseline (hoverless look is enforced inline in App.jsx too) */
 :root {
-  --bg: #fafafa;
-  --fg: #111827;
-  --muted: #6b7280;
-  --border: #e5e7eb;
-  --radius: 14px;
-  --primary-600: #2563eb;
-  --btn-font-size: 12px;
-  --btn-py: 6px;
-  --btn-px: 10px;
-  --btn-radius: 8px;
+  /* === Dark Medical Laboratory 配色 === */
+  --bg-primary: #0a0e12;
+  --bg-secondary: #12161a;
+  --bg-card: rgba(18, 22, 26, 0.9);
+  --bg-input: rgba(8, 10, 14, 0.95);
+  --bg-hover: rgba(0, 255, 230, 0.08);
+  
+  /* === 文字色系 === */
+  --text-primary: #d4e4e8;
+  --text-secondary: #7a9ca8;
+  --text-muted: #4a5c64;
+  --text-bright: #e8f4f8;
+  
+  /* === 主色調 - Cyan/Teal 醫療螢幕光 === */
+  --cyan-main: #00ffe6;
+  --cyan-bright: #5ffff8;
+  --cyan-dark: #008b7a;
+  --cyan-glow: rgba(0, 255, 230, 0.5);
+  
+  --teal-main: #00d4bf;
+  --teal-bright: #33e6d6;
+  --teal-glow: rgba(0, 212, 191, 0.5);
+  
+  --blue-main: #0099cc;
+  --blue-bright: #00ccff;
+  --blue-glow: rgba(0, 153, 204, 0.5);
+  
+  --green-main: #00ff88;
+  --green-bright: #5fffaa;
+  --green-glow: rgba(0, 255, 136, 0.5);
+  
+  /* === 邊框 - 金屬質感 === */
+  --border-subtle: rgba(0, 255, 230, 0.2);
+  --border-normal: rgba(0, 255, 230, 0.4);
+  --border-bright: rgba(0, 255, 230, 0.7);
+  
+  /* === 陰影 === */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.8);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.9);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.95);
+  --shadow-cyan: 0 0 30px rgba(0, 255, 230, 0.6);
+  --shadow-teal: 0 0 25px rgba(0, 212, 191, 0.5);
+  
+  /* === 間距 === */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 20px;
+  --spacing-lg: 32px;
+  --spacing-xl: 48px;
+  --spacing-2xl: 64px;
+  
+  /* === 字體大小 === */
+  --text-xs: 13px;      /* 從 12px 增加到 13px */
+  --text-sm: 15px;      /* 從 14px 增加到 15px */
+  --text-base: 16px;    /* 從 15px 增加到 16px */
+  --text-lg: 18px;      /* 從 17px 增加到 18px */
+  --text-xl: 24px;      /* 從 22px 增加到 24px */
+  --text-2xl: 30px;     /* 從 28px 增加到 30px */
+  --text-3xl: 42px;     /* 保持不變 */
+  --text-4xl: 56px;     /* 保持不變 */
 }
 
-* { box-sizing: border-box; }
-html, body, #root { height: 100%; }
+/* === 全局重置 === */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  overflow-x: hidden;
+}
+
 body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--fg);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  background: 
+    linear-gradient(180deg, #0a0e12 0%, #12161a 50%, #0a0e12 100%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 230, 0.02) 2px,
+      rgba(0, 255, 230, 0.02) 4px
+    );
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+  font-size: 16px; /* 增加基礎字體大小 */
+  line-height: 1.6;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* 醫療螢幕光暈效果 */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 30% 20%, rgba(0, 255, 230, 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 70% 80%, rgba(0, 212, 191, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(0, 153, 204, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.6;
+}
+
+/* === 主容器 === */
 .app {
-  max-width: none;
-  margin: 0;
-  padding: 18px 0 18px 18px;
-}
-
-.app__header { margin-bottom: 14px; }
-.app__title { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: .2px; }
-.app__subtitle { margin-top: 4px; color: var(--muted); font-size: 13px; }
-
-.app__grid { display: flex; gap: 0; width: 100%; }
-.app__grid > .card { flex: 1 1 0; min-width: 240px; overflow: auto; }
-
-.resizer { width: 8px; cursor: col-resize; position: relative; user-select: none; touch-action: none; align-self: stretch; background: transparent; }
-.resizer::after { content:''; position:absolute; top:0; bottom:0; left:3px; width:2px; background: var(--border); transition: background .15s ease; }
-.resizer:hover::after { background: #9ca3af; }
-
-.card { background:white; border:1px solid var(--border); border-radius: var(--radius); padding:12px; }
-.card__title { font-weight:600; margin-bottom:10px; }
-.card--stack > .divider { height:1px; background:var(--border); margin:12px 0; }
-
-.hint { margin-top: 8px; color: var(--muted); font-size: 12px; }
-.hint__code { background:#f3f4f6; padding:2px 6px; border-radius:8px; }
-
-/* Downsized buttons (no hover/active change) */
-button, .btn, [role="button"], .button {
-  background: var(--primary-600);
-  color:#fff;
-  border:none;
-  border-radius: var(--btn-radius);
-  padding: var(--btn-py) var(--btn-px);
-  font-weight:600;
-  font-size: var(--btn-font-size);
-  line-height:1.1;
-  cursor:pointer;
-}
-button:hover, .btn:hover, [role="button"]:hover, .button:hover,
-button:active, .btn:active, [role="button"]:active, .button:active {
-  background: var(--primary-600);
-  color: #fff;
-}
-button:disabled, .btn:disabled { opacity:.55; cursor:not-allowed; }
-
-.card input[type="text"],
-.card input[type="search"],
-.card input[type="number"],
-.card select,
-.card textarea { width:100%; max-width:100%; display:block; }
-
-.app__footer { margin-top:16px; color:var(--muted); font-size:12px; display:flex; gap:10px; align-items:center; border-top:1px solid var(--border); padding-top:12px; }
-
-@media (max-width: 1023px) {
-  .app { padding: 12px; }
-  .app__grid { flex-direction: column; }
-  .resizer { display: none; }
-}
-
-
-/* QueryBuilder fallback styles (when Tailwind classes are not present) */
-.qb__input {
   width: 100%;
   max-width: 100%;
-  display: block;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+}
+
+/* ========== Dark Medical Header ========== */
+.hero-header {
+  position: relative;
+  width: 100%;
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-md);
+  background: 
+    linear-gradient(180deg, 
+      rgba(18, 22, 26, 0.98) 0%,
+      rgba(10, 14, 18, 0.95) 100%);
+  border-bottom: 2px solid var(--cyan-main);
+  box-shadow: 
+    0 4px 30px rgba(0, 0, 0, 0.9),
+    inset 0 -1px 0 rgba(0, 255, 230, 0.3),
+    0 0 50px rgba(0, 255, 230, 0.1);
+  overflow: hidden;
+}
+
+/* 掃描線效果 */
+.hero-header__bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 230, 0.03) 2px,
+      rgba(0, 255, 230, 0.03) 4px
+    );
+  opacity: 0.5;
+  z-index: 0;
+}
+
+.hero-header__content {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Hero Title - 科技醫療風格 */
+.hero-title {
+  font-size: 48px;
+  font-weight: 200;
+  letter-spacing: 16px;
+  color: var(--cyan-bright);
+  margin: 0 0 var(--spacing-sm);
+  text-shadow: 
+    0 0 20px var(--cyan-glow),
+    0 0 40px var(--cyan-glow),
+    0 0 60px rgba(0, 255, 230, 0.3),
+    2px 2px 4px rgba(0, 0, 0, 0.8);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  text-transform: uppercase;
+  position: relative;
+}
+
+/* 掃描線裝飾 */
+.hero-title::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--cyan-main) 20%,
+    var(--cyan-bright) 50%,
+    var(--cyan-main) 80%,
+    transparent 100%);
+  box-shadow: 0 0 10px var(--cyan-glow);
+}
+
+.hero-subtitle {
+  font-size: var(--text-base);
+  font-weight: 300;
+  letter-spacing: 4px;
+  color: var(--text-secondary);
+  margin: 0 0 var(--spacing-lg);
+  text-transform: uppercase;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 導航整合進 Header */
+.hero-nav {
+  margin-top: var(--spacing-lg);
+}
+
+/* ========== 主要內容區域 ========== */
+.app__main {
+  width: 100%;
+  padding: var(--spacing-xl) var(--spacing-lg);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.app__content {
+  width: 100%;
+}
+
+.content-section {
+  width: 100%;
+  margin-bottom: var(--spacing-xl);
+}
+
+.section-header {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--cyan-main);
+  box-shadow: 0 1px 0 rgba(0, 255, 230, 0.2);
+  position: relative;
+}
+
+.section-title {
+  font-size: var(--text-2xl);
+  font-weight: 300;
+  color: var(--cyan-bright);
+  letter-spacing: 3px;
+  margin-bottom: var(--spacing-xs);
+  text-shadow: 
+    0 0 20px var(--cyan-glow),
+    0 0 40px rgba(0, 255, 230, 0.3);
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  text-transform: uppercase;
+}
+
+.section-desc {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  font-weight: 300;
+}
+
+/* === 按鈕樣式 - Dark Medical 風格 === */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: 12px 24px;
+  font-size: var(--text-sm);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border: 1px solid;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
   outline: none;
+  white-space: nowrap;
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.qb__input:focus {
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+.btn--primary {
+  border-color: var(--cyan-main);
+  color: var(--cyan-bright);
+  background: rgba(18, 22, 26, 0.8);
+  box-shadow: 
+    inset 0 1px 0 rgba(0, 255, 230, 0.2),
+    0 0 15px rgba(0, 255, 230, 0.1);
+}
+
+.btn--primary:hover {
+  border-color: var(--cyan-bright);
+  background: rgba(18, 22, 26, 0.95);
+  box-shadow: 
+    inset 0 1px 0 rgba(0, 255, 230, 0.3),
+    0 0 25px var(--cyan-glow);
+  transform: translateY(-2px);
+}
+
+.btn--secondary {
+  border-color: var(--teal-main);
+  color: var(--teal-bright);
+  background: rgba(18, 22, 26, 0.8);
+  box-shadow: 
+    inset 0 1px 0 rgba(0, 212, 191, 0.2),
+    0 0 15px rgba(0, 212, 191, 0.1);
+}
+
+.btn--secondary:hover {
+  border-color: var(--teal-bright);
+  background: rgba(18, 22, 26, 0.95);
+  box-shadow: 
+    inset 0 1px 0 rgba(0, 212, 191, 0.3),
+    0 0 25px rgba(0, 212, 191, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn--danger {
+  border-color: var(--blue-main);
+  color: var(--blue-bright);
+  background: rgba(18, 22, 26, 0.8);
+  box-shadow: 
+    inset 0 1px 0 rgba(0, 153, 204, 0.2),
+    0 0 15px rgba(0, 153, 204, 0.1);
+}
+
+.btn--danger:hover {
+  border-color: var(--blue-bright);
+  background: rgba(18, 22, 26, 0.95);
+  box-shadow: 
+    inset 0 1px 0 rgba(0, 153, 204, 0.3),
+    0 0 25px rgba(0, 153, 204, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* === 輸入框樣式 === */
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: var(--text-base);
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-input);
+  border: 1px solid var(--border-normal);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.input:hover {
+  border-color: var(--border-bright);
+}
+
+.input:focus {
+  border-color: var(--cyan-main);
+  box-shadow: 0 0 20px var(--cyan-glow);
+  background: rgba(10, 14, 18, 1);
+}
+
+/* === 選擇框 === */
+select {
+  padding: 10px 16px;
+  font-size: var(--text-sm);
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-input);
+  border: 1px solid var(--border-normal);
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+select:hover {
+  border-color: var(--border-bright);
+}
+
+select:focus {
+  border-color: var(--cyan-main);
+  box-shadow: 0 0 15px var(--cyan-glow);
+}
+
+/* === Alert 提示框 === */
+.alert {
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  border-left: 2px solid;
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 
-/* Ensure QueryBuilder input doesn't collapse too narrow */
-.qb { width: 100%; }
-.qb__input { width: 100%; min-width: 420px; }
-@media (min-width: 1024px) {
-  .qb__input { min-width: 640px; }
+.alert--error {
+  background: rgba(139, 69, 19, 0.12);
+  border-color: var(--teal-main);
+  color: var(--teal-bright);
+}
+
+.alert--warning {
+  background: rgba(0, 212, 191, 0.08);
+  border-color: var(--teal-main);
+  color: var(--teal-bright);
+}
+
+.alert--success {
+  background: rgba(0, 255, 136, 0.08);
+  border-color: var(--green-main);
+  color: var(--green-bright);
+}
+
+.alert--info {
+  background: rgba(0, 255, 230, 0.08);
+  border-color: var(--cyan-main);
+  color: var(--cyan-bright);
+}
+
+/* === 載入骨架 === */
+.skeleton {
+  background: linear-gradient(90deg,
+    rgba(0, 255, 230, 0.05) 0%,
+    rgba(0, 255, 230, 0.15) 50%,
+    rgba(0, 255, 230, 0.05) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border: 1px solid var(--border-subtle);
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* === 表格樣式 === */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+thead {
+  background: rgba(0, 255, 230, 0.08);
+  border-bottom: 2px solid var(--border-normal);
+}
+
+th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 400;
+  color: var(--cyan-bright);
+  text-transform: uppercase;
+  font-size: var(--text-xs);
+  letter-spacing: 1.5px;
+}
+
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+tr:hover {
+  background: var(--bg-hover);
+}
+
+/* === 滾動條 === */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-normal);
+  border: 1px solid var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cyan-dim);
+}
+
+/* === 響應式設計 === */
+
+/* 大屏幕 */
+@media (min-width: 1920px) {
+  .hero-title {
+    font-size: 64px;
+  }
+  
+  .app__main {
+    padding: var(--spacing-2xl) var(--spacing-xl);
+  }
+}
+
+/* 平板 */
+@media (max-width: 1024px) {
+  .hero-header {
+    padding: var(--spacing-xl) var(--spacing-md);
+  }
+  
+  .hero-title {
+    font-size: var(--text-3xl);
+    letter-spacing: 4px;
+  }
+  
+  .hero-subtitle {
+    font-size: var(--text-base);
+  }
+  
+  .app__main {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+  
+  .section-title {
+    font-size: var(--text-xl);
+  }
+}
+
+/* 手機 */
+@media (max-width: 768px) {
+  .hero-header {
+    padding: var(--spacing-lg) var(--spacing-sm);
+  }
+  
+  .hero-title {
+    font-size: var(--text-2xl);
+    letter-spacing: 2px;
+  }
+  
+  .hero-subtitle {
+    font-size: var(--text-sm);
+    letter-spacing: 1px;
+  }
+  
+  .hero-decor__line {
+    width: 40px;
+  }
+  
+  .app__main {
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
+  
+  .section-title {
+    font-size: var(--text-lg);
+  }
+  
+  .btn {
+    padding: 10px 18px;
+    font-size: var(--text-xs);
+  }
+}
+
+/* 小手機 */
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: var(--text-xl);
+  }
+  
+  .main-nav__container {
+    padding: 0 var(--spacing-sm);
+  }
+}
+
+/* === 動畫 === */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease;
+}
+
+/* === 全局字體大小調整 === */
+/* 提升整體可讀性 - 所有主要文字內容放大 */
+.app p, .app li, .app td, .app th, .app label, .app span:not(.icon) {
+  font-size: 16px;
+}
+
+.app input, .app button, .app select, .app textarea {
+  font-size: 16px;
+}
+
+/* 提示文字和次要文字 */
+.app small, .app .hint, .app .secondary {
+  font-size: 14px;
 }

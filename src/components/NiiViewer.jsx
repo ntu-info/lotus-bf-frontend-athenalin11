@@ -5,6 +5,8 @@ const X_RIGHT_ON_SCREEN_RIGHT = true;
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as nifti from 'nifti-reader-js'
 import { API_BASE } from '../api'
+import { Locations } from './Locations'
+import './NiiViewer.css'
 
 const MNI_BG_URL = 'static/mni_2mm.nii.gz'
 
@@ -37,6 +39,17 @@ export function NiiViewer({ query }) {
   const [thrMode, setThrMode] = useState('pctl') // default: Percentile (per request)
   const [pctl, setPctl] = useState(95)
   const [thrValue, setThrValue] = useState(0)     // used when mode === 'value'
+
+  // Location decoder state
+  const [decodingTerms, setDecodingTerms] = useState(false)
+  const [decodedTerms, setDecodedTerms] = useState([])
+  const [decodeError, setDecodeError] = useState('')
+  const [showDecodeResults, setShowDecodeResults] = useState(false)
+  
+  // Pre-computed coordinate-to-terms mapping
+  const [coordToTermsMap, setCoordToTermsMap] = useState(null)
+  const [precomputingMap, setPrecomputingMap] = useState(false)
+  const [precomputeProgress, setPrecomputeProgress] = useState(0)
 
   // volumes
   const bgRef  = useRef(null)   // { data, dims:[nx,ny,nz], voxelMM:[vx,vy,vz], min, max }
@@ -196,6 +209,118 @@ const coord2idx = (c_mm, n, axis) => {
     })()
     return () => { alive = false }
   }, [])
+
+  // Pre-compute coordinate-to-terms mapping when component mounts
+  useEffect(() => {
+    const precomputeMapping = async () => {
+      setPrecomputingMap(true)
+      setPrecomputeProgress(0)
+      
+      try {
+        // Step 1: Get all terms (first 30 for speed)
+        const termsRes = await fetch(`${API_BASE}/terms`, {
+          signal: AbortSignal.timeout(5000)
+        })
+        if (!termsRes.ok) throw new Error('Failed to fetch terms')
+        const termsData = await termsRes.json()
+        const allTerms = termsData.terms || termsData.results || []
+        
+        const checkLimit = Math.min(30, allTerms.length)
+        const termsToCheck = allTerms.slice(0, checkLimit)
+        
+        // Step 2: Build mapping of coordinate -> terms
+        const mapping = new Map() // Key: "x,y,z", Value: Set of terms
+        
+        for (let i = 0; i < termsToCheck.length; i++) {
+          const term = termsToCheck[i]
+          setPrecomputeProgress(Math.round(((i + 1) / checkLimit) * 100))
+          
+          try {
+            const locRes = await fetch(
+              `${API_BASE}/query/${encodeURIComponent(term)}/locations?limit=20`,
+              { signal: AbortSignal.timeout(2000) }
+            )
+            if (!locRes.ok) {
+              console.log(`⚠️  Skip ${term}: HTTP ${locRes.status}`)
+              continue
+            }
+            
+            const locData = await locRes.json()
+            const locations = locData.results || []
+            
+            if (locations.length > 0) {
+              console.log(`📍 ${term}: ${locations.length} locations`)
+              // Show first location as example
+              if (locations[0]) {
+                const loc = locations[0]
+                console.log(`   Example: (${loc.x?.toFixed(1)}, ${loc.y?.toFixed(1)}, ${loc.z?.toFixed(1)})`)
+              }
+            }
+            
+            let addedKeys = 0
+            // For each location, add to all nearby coordinates (grid based)
+            locations.forEach(loc => {
+              const lx = loc.x
+              const ly = loc.y
+              const lz = loc.z
+              
+              // Round to nearest 5mm for efficiency
+              const roundX = Math.round(lx / 5) * 5
+              const roundY = Math.round(ly / 5) * 5
+              const roundZ = Math.round(lz / 5) * 5
+              
+              // Add to nearby grid points (within 10mm radius)
+              for (let dx = -10; dx <= 10; dx += 5) {
+                for (let dy = -10; dy <= 10; dy += 5) {
+                  for (let dz = -10; dz <= 10; dz += 5) {
+                    const gridX = roundX + dx
+                    const gridY = roundY + dy
+                    const gridZ = roundZ + dz
+                    
+                    // Check if within 10mm radius
+                    const dist = Math.sqrt(
+                      (gridX - lx) ** 2 + 
+                      (gridY - ly) ** 2 + 
+                      (gridZ - lz) ** 2
+                    )
+                    
+                    if (dist <= 10) {
+                      const key = `${gridX},${gridY},${gridZ}`
+                      if (!mapping.has(key)) {
+                        mapping.set(key, new Set())
+                        addedKeys++
+                      }
+                      mapping.get(key).add(term)
+                    }
+                  }
+                }
+              }
+            })
+            
+            if (addedKeys > 0) {
+              console.log(`   ➕ Added ${addedKeys} new grid points for ${term}`)
+            }
+          } catch (err) {
+            // Skip this term on error
+            continue
+          }
+        }
+        
+        setCoordToTermsMap(mapping)
+        console.log(`✅ Pre-computed mapping complete!`)
+        console.log(`   - Checked ${termsToCheck.length} terms`)
+        console.log(`   - Mapped ${mapping.size} coordinate points`)
+        console.log(`   - Sample keys:`, Array.from(mapping.keys()).slice(0, 5))
+      } catch (err) {
+        console.error('❌ Pre-compute error:', err)
+      } finally {
+        setPrecomputingMap(false)
+        setPrecomputeProgress(0)
+      }
+    }
+    
+    precomputeMapping()
+  }, []) // Run once on mount
 
   
   // keep thrValue within current map range when map changes
@@ -357,6 +482,106 @@ const coord2idx = (c_mm, n, axis) => {
     setCz(String(idx2coord(iz, nz, 'z')))
   }, [ix,iy,iz,dims])
 
+  // Auto-decode function: find terms related to current crosshair position
+  useEffect(() => {
+    // Don't run if no valid coordinates
+    const x = parseFloat(cx) || 0
+    const y = parseFloat(cy) || 0
+    const z = parseFloat(cz) || 0
+    
+    if (!dims[0] || (x === 0 && y === 0 && z === 0)) {
+      setShowDecodeResults(false)
+      return
+    }
+
+    // Debounce: wait 500ms after coordinate changes
+    const timer = setTimeout(() => {
+      // Fast lookup using pre-computed map (instant results!)
+      if (coordToTermsMap) {
+        // Round to nearest 5mm grid point
+        const roundX = Math.round(x / 5) * 5
+        const roundY = Math.round(y / 5) * 5
+        const roundZ = Math.round(z / 5) * 5
+        
+        const key = `${roundX},${roundY},${roundZ}`
+        const terms = coordToTermsMap.get(key)
+        
+        if (terms && terms.size > 0) {
+          setDecodedTerms(Array.from(terms))
+          setDecodeError('')
+          setShowDecodeResults(true)
+        } else {
+          setDecodedTerms([])
+          setDecodeError('No terms found at this coordinate')
+          setShowDecodeResults(true)
+        }
+        setDecodingTerms(false)
+        return
+      }
+      
+      // Fallback to original slow method if map not ready
+      setDecodingTerms(true)
+      setDecodeError('')
+      setShowDecodeResults(true)
+      
+      ;(async () => {
+        try {
+          // Fetch all terms first
+          const termsRes = await fetch(`${API_BASE}/terms`)
+          const termsData = await termsRes.json()
+          const allTerms = termsData?.terms || []
+          
+          const matchingTerms = []
+          const radius = 10 // Search within 10mm
+          const checkLimit = 30 // Check only first 30 terms for faster response
+          
+          for (let i = 0; i < Math.min(checkLimit, allTerms.length); i++) {
+            const term = allTerms[i]
+            
+            try {
+              const locRes = await fetch(
+                `${API_BASE}/query/${encodeURIComponent(term)}/locations?limit=20`, // Reduced from 50 to 20
+                { signal: AbortSignal.timeout(2000) } // Reduced from 3000ms to 2000ms
+              )
+              
+              if (!locRes.ok) continue
+              
+              const locData = await locRes.json()
+              const locations = locData?.results || []
+              
+              const hasMatch = locations.some(loc => {
+                const dx = (loc.x || 0) - x
+                const dy = (loc.y || 0) - y
+                const dz = (loc.z || 0) - z
+                const distance = Math.sqrt(dx*dx + dy*dy + dz*dz)
+                return distance <= radius
+              })
+              
+              if (hasMatch) {
+                matchingTerms.push(term)
+              }
+            } catch (e) {
+              continue
+            }
+          }
+          
+          setDecodedTerms(matchingTerms)
+          
+          if (matchingTerms.length === 0) {
+            setDecodeError(`No terms found within ${radius}mm. Checked ${Math.min(checkLimit, allTerms.length)} terms.`)
+          }
+        } catch (e) {
+          setDecodeError(`Failed: ${e?.message || e}`)
+          setDecodedTerms([])
+        } finally {
+          setDecodingTerms(false)
+        }
+      })()
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [cx, cy, cz, dims, coordToTermsMap])
+
   // commit handlers: parse signed integer, map to index, clamp to volume
   const commitCoord = (axis) => {
     const [nx,ny,nz] = dims
@@ -394,54 +619,53 @@ const coord2idx = (c_mm, n, axis) => {
     { key: 'z', name: 'Axial',    axisLabel: 'Z', index: iz, setIndex: setIz, max: Math.max(0, nz-1), canvasRef: canvases[0] },
   ]
 
-  // shared small input styles to mimic Neurosynth (compact bordered boxes)
-  const nsInputCls = 'w-16 rounded border border-gray-400 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400'
-  const nsLabelCls = 'mr-1 text-sm'
-
   return (
-    <div className='flex flex-col gap-3'>
-      <div className='flex items-center justify-between'>
+    <div className='nii-viewer'>
+      {/* === 標題與下載連結 === */}
+      <div className='nii-header'>
         <div className='card__title'>NIfTI Viewer</div>
-        <div className='flex items-center gap-2 text-sm text-gray-500'>
-          {query && <a href={mapUrl} className='rounded-lg border px-2 py-1 text-xs hover:bg-gray-50'>Download map</a>}
-        </div>
+        {query && <a href={mapUrl} className='nii-download-link'>Download Map</a>}
       </div>
 
-      {/* --- Threshold mode & value --- */}
-      <div className='rounded-xl border p-3 text-sm'>
-        <label className='flex items-center gap-2'>
-          <span>Threshold mode</span>
-          <select value={thrMode} onChange={e=>setThrMode(e.target.value)} className='rounded-lg border px-2 py-1'>
-            <option value='value'>Value</option>
-            <option value='pctl'>Percentile</option>
-          </select>
-        </label>
-        <br />
-        {thrMode === 'value' ? (
-          <>
-            <label className='flex items-center gap-2'>
-              <span>Threshold</span>
-              <input type='number' step='0.01' value={thrValue} onChange={e=>setThrValue(Number(e.target.value))} className='w-28 rounded-lg border px-2 py-1' />
-            </label>
-            <br />
-          </>
-        ) : (
-          <>
-            <label className='flex items-center gap-2'>
-              <span>Percentile</span>
-              <input type='number' min={50} max={99.9} step={0.5} value={pctl} onChange={e=>setPctl(Number(e.target.value)||95)} className='w-24 rounded-lg border px-2 py-1' />
-            </label>
-            <br />
-          </>
-        )}
+      {/* === 載入或錯誤狀態 === */}
+      {(loadingBG || loadingMap) && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className='nii-loading' style={{ height: '350px' }} />
+          ))}
+        </div>
+      )}
+      {(errBG || errMap) && (
+        <div className='nii-error'>
+          {errBG && <div>Background: {errBG}</div>}
+          {errMap && <div>Map: {errMap}</div>}
+        </div>
+      )}
 
-        {/* Neurosynth-style coordinate inputs (signed, centered at 0) */}
-        <div className='mt-1 flex items-center gap-4'>
-          <label className='flex items-center'>
-            <span className={nsLabelCls}>X (mm):</span>
+      {/* === 三個腦區圖 - 橫向併排 === */}
+      {!!nx && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
+          {sliceConfigs.map(({ key, name, axisLabel, canvasRef }) => (
+            <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: '8px', height: '220px', overflow: 'hidden' }}>
+              <div className='nii-slice-label' style={{ textAlign: 'center', flexShrink: 0, fontSize: '13px' }}>
+                {name} ({axisLabel})
+              </div>
+              <div className='nii-canvas-container' style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 0, overflow: 'hidden' }}>
+                <canvas ref={canvasRef} style={{ maxWidth: '100%', maxHeight: '100%', cursor: 'crosshair', objectFit: 'contain' }} onClick={(e)=>onCanvasClick(e, key)} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* === 座標控制區 === */}
+      <div className='nii-control-panel'>
+        <div className='nii-section-title'>Crosshair Position</div>
+        <div className='nii-coordinates'>
+          <label>
+            <span>X (mm):</span>
             <input
               type='text' inputMode='decimal' pattern='-?[0-9]*([.][0-9]+)?'
-              className={nsInputCls}
               value={cx}
               onChange={e=>setCx(e.target.value)}
               onBlur={()=>commitCoord('x')}
@@ -449,11 +673,10 @@ const coord2idx = (c_mm, n, axis) => {
               aria-label='X coordinate (centered)'
             />
           </label>
-          <label className='flex items-center'>
-            <span className={nsLabelCls}>Y (mm):</span>
+          <label>
+            <span>Y (mm):</span>
             <input
               type='text' inputMode='decimal' pattern='-?[0-9]*([.][0-9]+)?'
-              className={nsInputCls}
               value={cy}
               onChange={e=>setCy(e.target.value)}
               onBlur={()=>commitCoord('y')}
@@ -461,11 +684,10 @@ const coord2idx = (c_mm, n, axis) => {
               aria-label='Y coordinate (centered)'
             />
           </label>
-          <label className='flex items-center'>
-            <span className={nsLabelCls}>Z (mm):</span>
+          <label>
+            <span>Z (mm):</span>
             <input
               type='text' inputMode='decimal' pattern='-?[0-9]*([.][0-9]+)?'
-              className={nsInputCls}
               value={cz}
               onChange={e=>setCz(e.target.value)}
               onBlur={()=>commitCoord('z')}
@@ -474,52 +696,243 @@ const coord2idx = (c_mm, n, axis) => {
             />
           </label>
         </div>
-      </div>
-
-      {/* --- Brain views --- */}
-      {(loadingBG || loadingMap) && (
-        <div className='grid gap-3 lg:grid-cols-3'>
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className='h-64 animate-pulse rounded-xl border bg-gray-100' />
-          ))}
+        <div className='nii-param-hint'>
+          點擊圖片或手動輸入座標來移動綠色十字標記。座標以 MNI 空間的 mm 為單位。
         </div>
-      )}
-      {(errBG || errMap) && (
-        <div className='rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800'>
-          {errBG && <div>Background: {errBG}</div>}
-          {errMap && <div>Map: {errMap}</div>}
-        </div>
-      )}
 
-      {!!nx && (
-        <div className='grid grid-cols-3 gap-3' style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12 }}>
-          {sliceConfigs.map(({ key, name, axisLabel, index, setIndex, max, canvasRef }) => (
-            <div key={key} className='flex flex-col gap-2'>
-              <div className='text-xs text-gray-600'>{name} ({axisLabel})</div>
-              <div className='flex items-center gap-2'>
-                <canvas ref={canvasRef} className='h-64 w-full rounded-xl border' onClick={(e)=>onCanvasClick(e, key)} style={{ cursor: 'crosshair' }} />
-              </div>
+        {/* Pre-compute Progress */}
+        {precomputingMap && (
+          <div style={{
+            marginTop: '16px',
+            padding: '12px 16px',
+            background: 'rgba(0, 255, 230, 0.05)',
+            border: '1px solid var(--cyan-dim)',
+            borderRadius: '6px',
+          }}>
+            <div style={{
+              fontSize: '12px',
+              color: 'var(--cyan)',
+              marginBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}>
+              <div className="loading-spinner" style={{
+                width: '12px',
+                height: '12px',
+                border: '2px solid var(--cyan-dim)',
+                borderTopColor: 'var(--cyan)',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+              }} />
+              <span>Building coordinate index... {precomputeProgress}%</span>
             </div>
-          ))}
+            <div style={{
+              width: '100%',
+              height: '4px',
+              background: 'rgba(0, 255, 230, 0.1)',
+              borderRadius: '2px',
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                width: `${precomputeProgress}%`,
+                height: '100%',
+                background: 'var(--cyan)',
+                transition: 'width 0.3s ease',
+              }} />
+            </div>
+          </div>
+        )}
+
+        {coordToTermsMap && !precomputingMap && (
+          <div style={{
+            marginTop: '12px',
+            padding: '8px 12px',
+            background: 'rgba(0, 255, 230, 0.03)',
+            border: '1px solid var(--cyan-dim)',
+            borderRadius: '4px',
+            fontSize: '11px',
+            color: 'var(--text-secondary)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}>
+            <span style={{ color: 'var(--cyan)' }}>✓</span>
+            <span>Index ready • {coordToTermsMap.size} coordinates mapped • Instant search enabled</span>
+          </div>
+        )}
+
+        {/* Related Terms - Auto Display */}
+        {showDecodeResults && (
+          <div style={{
+            marginTop: '20px',
+            padding: '16px',
+            background: 'rgba(0, 255, 230, 0.03)',
+            border: '1px solid var(--cyan-dim)',
+            borderRadius: '6px',
+          }}>
+            <div style={{
+              fontSize: '13px',
+              fontWeight: '600',
+              color: 'var(--cyan)',
+              marginBottom: '12px',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: '8px',
+              flexWrap: 'wrap',
+            }}>
+              <span>Related Terms</span>
+              {!decodingTerms && decodedTerms.length > 0 && (
+                <>
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: '400',
+                    color: 'var(--text-secondary)',
+                    textTransform: 'none',
+                    letterSpacing: '0',
+                  }}>
+                    ({decodedTerms.length})
+                  </span>
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: '400',
+                    color: 'var(--text-secondary)',
+                    textTransform: 'none',
+                    letterSpacing: '0',
+                    fontFamily: 'Courier New, monospace',
+                  }}>
+                    at ({parseFloat(cx).toFixed(1)}, {parseFloat(cy).toFixed(1)}, {parseFloat(cz).toFixed(1)})
+                  </span>
+                </>
+              )}
+            </div>
+
+            {decodingTerms && (
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <div style={{
+                  height: '3px',
+                  background: 'linear-gradient(90deg, transparent 0%, var(--cyan) 50%, transparent 100%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'loadingSlide 1.5s ease-in-out infinite',
+                  marginBottom: '12px',
+                  borderRadius: '2px',
+                }} />
+                <p style={{ margin: '0', color: 'var(--text-secondary)', fontSize: '12px' }}>
+                  Searching...
+                </p>
+              </div>
+            )}
+
+            {!decodingTerms && decodeError && (
+              <div style={{
+                padding: '12px',
+                background: 'rgba(255, 80, 80, 0.05)',
+                border: '1px solid rgba(255, 80, 80, 0.2)',
+                borderRadius: '4px',
+                color: 'var(--text-secondary)',
+                fontSize: '12px',
+                lineHeight: '1.5',
+              }}>
+                {decodeError}
+              </div>
+            )}
+
+            {!decodingTerms && decodedTerms.length > 0 && (
+              <div style={{
+                display: 'grid',
+                gap: '6px',
+                maxHeight: '200px',
+                overflowY: 'auto',
+              }}>
+                {decodedTerms.map((term, idx) => (
+                  <div
+                    key={`${term}-${idx}`}
+                    style={{
+                      padding: '8px 12px',
+                      background: 'rgba(18, 22, 26, 0.6)',
+                      border: '1px solid rgba(0, 255, 230, 0.15)',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      color: 'var(--text-primary)',
+                      transition: 'all 0.2s ease',
+                      cursor: 'default',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(0, 255, 230, 0.08)'
+                      e.currentTarget.style.borderColor = 'var(--cyan)'
+                      e.currentTarget.style.transform = 'translateX(4px)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(18, 22, 26, 0.6)'
+                      e.currentTarget.style.borderColor = 'rgba(0, 255, 230, 0.15)'
+                      e.currentTarget.style.transform = 'translateX(0)'
+                    }}
+                  >
+                    {term}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+      </div>
+
+      {/* === Map 生成參數 === */}
+      <div className='nii-control-panel'>
+        <div className='nii-section-title'>Map Generation Parameters</div>
+        <label>
+          <span>Gaussian FWHM</span>
+          <input type='number' step='0.5' value={fwhm} onChange={e=>setFwhm(Number(e.target.value)||0)} />
+        </label>
+        <div className='nii-param-hint'>
+          高斯平滑參數，控制激活圖的平滑程度（單位：mm）。數值越大越平滑。
+        </div>
+      </div>
+
+      {/* === 顯示控制 === */}
+      <div className='nii-control-panel'>
+        <div className='nii-section-title'>Display Controls</div>
+        
+        <label>
+          <span>Threshold mode</span>
+          <select value={thrMode} onChange={e=>setThrMode(e.target.value)}>
+            <option value='value'>Value</option>
+            <option value='pctl'>Percentile</option>
+          </select>
+        </label>
+        
+        {thrMode === 'value' ? (
+          <label>
+            <span>Threshold</span>
+            <input type='number' step='0.01' value={thrValue} onChange={e=>setThrValue(Number(e.target.value))} />
+          </label>
+        ) : (
+          <label>
+            <span>Percentile</span>
+            <input type='number' min={50} max={99.9} step={0.5} value={pctl} onChange={e=>setPctl(Number(e.target.value)||95)} />
+          </label>
+        )}
+
+        <label style={{ marginTop: '12px' }}>
+          <span>Overlay Alpha</span>
+          <input type='range' min={0} max={1} step={0.05} value={overlayAlpha} onChange={e=>setOverlayAlpha(Number(e.target.value))} />
+          <span style={{ marginLeft: '12px', color: 'var(--cyan-bright)', fontWeight: '600' }}>{overlayAlpha.toFixed(2)}</span>
+        </label>
+        <div className='nii-param-hint'>
+          覆蓋層透明度 (0=完全透明，1=完全不透明)。控制紅色激活圖在灰階大腦圖上的顯示強度。
+        </div>
+      </div>
+
+      {/* === 腦區座標表格 === */}
+      {query && (
+        <div style={{ marginTop: '32px' }}>
+          <div className='nii-section-title' style={{ marginBottom: '16px' }}>Brain Region Coordinates</div>
+          <Locations query={query} />
         </div>
       )}
-
-      {/* map generation params */}
-      <div className='rounded-xl border p-3 text-sm'>
-        <label className='flex flex-col'>Gaussian FWHM:
-          <input type='number' step='0.5' value={fwhm} onChange={e=>setFwhm(Number(e.target.value)||0)} className='w-28 rounded-lg border px-2 py-1'/>
-          <br />
-        </label>
-      </div>
-
-      {/* overlay controls */}
-      <div className='rounded-xl border p-3 text-sm'>
-        <label className='flex items-center gap-2'>
-          <span>Overlay alpha</span>
-          <input type='range' min={0} max={1} step={0.05} value={overlayAlpha} onChange={e=>setOverlayAlpha(Number(e.target.value))} className='w-40' />
-        </label>
-        <br />
-      </div>
     </div>
   )
 }

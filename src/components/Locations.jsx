@@ -1,6 +1,6 @@
 import { API_BASE } from '../api'
-// Locations.jsx
 import { useEffect, useMemo, useState } from 'react'
+import './Locations.css'
 
 function cls (...xs) { return xs.filter(Boolean).join(' ') }
 
@@ -16,6 +16,7 @@ export function Locations ({ query }) {
   const [sortDir, setSortDir] = useState('asc')
   const pageSize = 30
   const [page, setPage] = useState(1)
+  const [isSearching, setIsSearching] = useState(false)
 
   useEffect(() => { setPage(1); setOffset(0) }, [query])
 
@@ -67,24 +68,77 @@ export function Locations ({ query }) {
     else { setSortKey(k); setSortDir('asc') }
   }
 
+  const handleApplyParams = async () => {
+    setIsSearching(true)
+    await new Promise(resolve => setTimeout(resolve, 300))
+    setIsSearching(false)
+  }
+
   return (
-    <div className='flex flex-col rounded-2xl border'>
-      <div className='flex items-center justify-between p-3'>
-        <div className='font-semibold'>Locations</div>
-        <div className='text-sm text-gray-500'>{query ? `query: ${query}` : '請在上方建立查詢'}</div>
+    <div className='locations'>
+      {/* Parameter Control Bar */}
+      <div className="locations-control-bar">
+        <div className="locations-params">
+          <div className="locations-param">
+            <label>Radius (mm)</label>
+            <input 
+              type='number' 
+              step='0.5' 
+              value={r} 
+              onChange={e=>setR(Number(e.target.value)||6)} 
+              className='locations-input'
+            />
+          </div>
+          
+          <div className="locations-param">
+            <label>Limit</label>
+            <input 
+              type='number' 
+              step='10' 
+              value={limit} 
+              onChange={e=>setLimit(Math.max(0, Number(e.target.value)||0))} 
+              className='locations-input'
+            />
+          </div>
+          
+          <div className="locations-param">
+            <label>Offset</label>
+            <input 
+              type='number' 
+              step='10' 
+              value={offset} 
+              onChange={e=>setOffset(Math.max(0, Number(e.target.value)||0))} 
+              className='locations-input'
+            />
+          </div>
+        </div>
+        
+        <button 
+          className="locations-apply-button"
+          onClick={handleApplyParams}
+          disabled={isSearching}
+        >
+          {isSearching ? (
+            <>
+              <span className="locations-spinner"></span>
+              Applying...
+            </>
+          ) : (
+            <>
+              <svg className="locations-icon" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd" />
+              </svg>
+              Apply
+            </>
+          )}
+        </button>
       </div>
 
-      <div className='flex flex-wrap items-end gap-3 px-3 pb-2 text-sm'>
-        <label className='flex flex-col'>r (mm)
-          <input type='number' step='0.5' value={r} onChange={e=>setR(Number(e.target.value)||6)} className='w-24 rounded-lg border px-2 py-1'/>
-        </label>
-        <label className='flex flex-col'>limit
-          <input type='number' step='10' value={limit} onChange={e=>setLimit(Math.max(0, Number(e.target.value)||0))} className='w-24 rounded-lg border px-2 py-1'/>
-        </label>
-        <label className='flex flex-col'>offset
-          <input type='number' step='10' value={offset} onChange={e=>setOffset(Math.max(0, Number(e.target.value)||0))} className='w-24 rounded-lg border px-2 py-1'/>
-        </label>
-      </div>
+      {query && (
+        <div className="locations-query-display">
+          Current Query: <code>{query}</code>
+        </div>
+      )}
 
       {!query && <div className='px-3 pb-4 text-sm text-gray-500'>尚未提供查詢字串。</div>}
       {query && loading && (

@@ -1,0 +1,553 @@
+/* Locations.css - Dark Sci-Fi Medical Laboratory - REDESIGNED */
+
+.locations {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* === 參數控制欄 - 重新設計 === */
+.locations-control-bar {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+  gap: 24px !important;
+  margin-bottom: 40px !important;
+  padding: 32px !important;
+  background: 
+    linear-gradient(135deg, rgba(18, 22, 26, 0.95) 0%, rgba(10, 14, 18, 0.95) 100%),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 230, 0.03) 2px,
+      rgba(0, 255, 230, 0.03) 4px
+    ) !important;
+  border: 2px solid var(--cyan-main) !important;
+  border-radius: 8px !important;
+  box-shadow: 
+    inset 0 2px 0 rgba(0, 255, 230, 0.3),
+    inset 0 -1px 0 rgba(0, 255, 230, 0.1),
+    0 8px 32px rgba(0, 0, 0, 0.9),
+    0 0 40px rgba(0, 255, 230, 0.2) !important;
+  position: relative !important;
+}
+
+/* === 發光邊框動畫 === */
+.locations-control-bar::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, 
+    var(--cyan-main), 
+    var(--teal-main), 
+    var(--cyan-main)
+  );
+  border-radius: 8px;
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.3s ease;
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.3; }
+}
+
+.locations-params {
+  grid-column: 1 / -1 !important;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+  gap: 24px !important;
+}
+
+.locations-param {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  min-width: 0 !important;
+  padding: 20px !important;
+  background: rgba(8, 10, 14, 0.6) !important;
+  border: 1px solid rgba(0, 255, 230, 0.2) !important;
+  border-radius: 6px !important;
+  transition: all 0.3s ease !important;
+}
+
+.locations-param:hover {
+  background: rgba(8, 10, 14, 0.8) !important;
+  border-color: var(--cyan-main) !important;
+  box-shadow: 0 0 20px rgba(0, 255, 230, 0.15) !important;
+  transform: translateY(-2px) !important;
+}
+
+.locations-param label {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--cyan-bright) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2px !important;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
+  text-shadow: 0 0 10px rgba(0, 255, 230, 0.5) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.locations-param label::before {
+  content: '▸';
+  color: var(--cyan-main);
+  font-size: 12px;
+}
+
+.locations-input {
+  padding: 14px 18px !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace !important;
+  color: var(--cyan-bright) !important;
+  background: rgba(5, 7, 10, 0.95) !important;
+  border: 2px solid rgba(0, 255, 230, 0.3) !important;
+  border-radius: 4px !important;
+  box-shadow: 
+    inset 0 2px 6px rgba(0, 0, 0, 0.9),
+    0 0 0 0 rgba(0, 255, 230, 0) !important;
+  outline: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.locations-input:hover {
+  border-color: var(--cyan-main) !important;
+  box-shadow: 
+    inset 0 2px 6px rgba(0, 0, 0, 0.9),
+    0 0 20px rgba(0, 255, 230, 0.3) !important;
+}
+
+.locations-input:focus {
+  border-color: var(--cyan-bright) !important;
+  box-shadow: 
+    inset 0 2px 6px rgba(0, 0, 0, 0.9),
+    0 0 30px var(--cyan-glow),
+    0 0 60px rgba(0, 255, 230, 0.2) !important;
+  background: rgba(5, 7, 10, 1) !important;
+  transform: scale(1.02) !important;
+}
+
+/* === Apply 按鈕 - 重新設計 === */
+.locations-apply-button {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  max-width: 300px !important;
+  margin: 8px auto 0 !important;
+  padding: 16px 32px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2.5px !important;
+  color: #0a0e12 !important;
+  background: linear-gradient(135deg, var(--cyan-main) 0%, var(--teal-main) 100%) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  box-shadow: 
+    0 4px 20px rgba(0, 255, 230, 0.4),
+    0 0 40px rgba(0, 255, 230, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  cursor: pointer !important;
+  outline: none !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.locations-apply-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.3), 
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.locations-apply-button:hover::before {
+  left: 100%;
+}
+
+.locations-apply-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--cyan-bright) 0%, var(--cyan-main) 100%) !important;
+  box-shadow: 
+    0 6px 30px rgba(0, 255, 230, 0.6),
+    0 0 60px rgba(0, 255, 230, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+}
+
+.locations-apply-button:active:not(:disabled) {
+  transform: translateY(-1px) scale(1) !important;
+  box-shadow: 
+    0 2px 15px rgba(0, 255, 230, 0.4),
+    0 0 40px rgba(0, 255, 230, 0.3) !important;
+}
+
+.locations-apply-button:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  background: linear-gradient(135deg, rgba(0, 255, 230, 0.3) 0%, rgba(0, 212, 191, 0.3) 100%) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.locations-icon {
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0 !important;
+  filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.5)) !important;
+}
+
+.locations-spinner {
+  width: 18px !important;
+  height: 18px !important;
+  border: 2px solid rgba(10, 14, 18, 0.3) !important;
+  border-top-color: #0a0e12 !important;
+  border-radius: 50% !important;
+  animation: locations-spin 0.6s linear infinite !important;
+}
+
+@keyframes locations-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* === 查詢顯示 - 重新設計 === */
+.locations-query-display {
+  padding: 20px 28px !important;
+  background: 
+    linear-gradient(135deg, rgba(0, 255, 230, 0.08) 0%, rgba(0, 212, 191, 0.05) 100%),
+    rgba(18, 22, 26, 0.8) !important;
+  border: 2px solid var(--cyan-dark) !important;
+  border-left: 4px solid var(--cyan-main) !important;
+  border-radius: 6px !important;
+  box-shadow: 
+    inset 0 0 30px rgba(0, 255, 230, 0.08),
+    0 4px 20px rgba(0, 0, 0, 0.6) !important;
+  margin-bottom: 32px !important;
+  font-size: 14px !important;
+  color: var(--text-secondary) !important;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.locations-query-display::before {
+  content: '⚡';
+  font-size: 20px;
+  color: var(--cyan-main);
+  text-shadow: 0 0 10px var(--cyan-glow);
+}
+
+.locations-query-display code {
+  color: var(--cyan-bright) !important;
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace !important;
+  font-weight: 600 !important;
+  font-size: 15px !important;
+  background: rgba(0, 255, 230, 0.15) !important;
+  padding: 6px 16px !important;
+  margin-left: 8px !important;
+  border: 1px solid var(--cyan-main) !important;
+  border-radius: 4px !important;
+  box-shadow: 
+    inset 0 0 20px rgba(0, 255, 230, 0.1),
+    0 0 15px rgba(0, 255, 230, 0.2) !important;
+  text-shadow: 0 0 10px rgba(0, 255, 230, 0.5) !important;
+}
+
+/* === 表格樣式 - 重新設計 === */
+.locations table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  background: rgba(18, 22, 26, 0.8) !important;
+  border: 2px solid var(--cyan-main) !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.8),
+    0 0 40px rgba(0, 255, 230, 0.2),
+    inset 0 1px 0 rgba(0, 255, 230, 0.2) !important;
+}
+
+.locations thead {
+  background: 
+    linear-gradient(135deg, rgba(0, 255, 230, 0.2) 0%, rgba(0, 212, 191, 0.15) 100%) !important;
+  border-bottom: 3px solid var(--cyan-main) !important;
+  box-shadow: 0 2px 10px rgba(0, 255, 230, 0.3) !important;
+}
+
+.locations th {
+  padding: 18px 24px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2px !important;
+  color: var(--cyan-bright) !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
+  text-shadow: 0 0 15px var(--cyan-glow) !important;
+  position: relative !important;
+  user-select: none !important;
+}
+
+.locations th::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--cyan-bright);
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px var(--cyan-glow);
+}
+
+.locations th:hover {
+  background: rgba(0, 255, 230, 0.25) !important;
+  color: #ffffff !important;
+  text-shadow: 
+    0 0 20px var(--cyan-glow),
+    0 0 40px rgba(0, 255, 230, 0.8) !important;
+}
+
+.locations th:hover::after {
+  width: 100%;
+}
+
+.locations tbody tr {
+  border-bottom: 1px solid rgba(0, 255, 230, 0.15) !important;
+  transition: all 0.3s ease !important;
+  background: transparent !important;
+}
+
+.locations tbody tr:hover {
+  background: rgba(0, 255, 230, 0.12) !important;
+  box-shadow: 
+    inset 0 0 30px rgba(0, 255, 230, 0.15),
+    inset 0 1px 0 rgba(0, 255, 230, 0.3),
+    inset 0 -1px 0 rgba(0, 255, 230, 0.3) !important;
+  transform: scale(1.005) !important;
+}
+
+.locations tbody tr:nth-child(even) {
+  background: rgba(10, 14, 18, 0.4) !important;
+}
+
+.locations tbody tr:nth-child(even):hover {
+  background: rgba(0, 255, 230, 0.12) !important;
+}
+
+.locations tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+.locations td {
+  padding: 20px 24px !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  color: var(--text-primary) !important;
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace !important;
+  line-height: 1.6 !important;
+  transition: color 0.3s ease !important;
+}
+
+.locations tbody tr:hover td {
+  color: var(--text-bright) !important;
+}
+
+/* === 分頁控制 - 重新設計 === */
+.locations > div:last-child {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 20px 28px !important;
+  margin-top: -2px !important;
+  background: 
+    linear-gradient(135deg, rgba(18, 22, 26, 0.95) 0%, rgba(10, 14, 18, 0.95) 100%) !important;
+  border: 2px solid var(--cyan-main) !important;
+  border-top: none !important;
+  border-radius: 0 0 8px 8px !important;
+  font-size: 14px !important;
+  color: var(--text-secondary) !important;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(0, 255, 230, 0.1) !important;
+}
+
+.locations > div:last-child b {
+  color: var(--cyan-bright) !important;
+  font-weight: 600 !important;
+  text-shadow: 0 0 10px var(--cyan-glow) !important;
+  font-size: 15px !important;
+}
+
+.locations > div:last-child button {
+  padding: 12px 24px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1.5px !important;
+  color: var(--cyan-bright) !important;
+  background: rgba(10, 14, 18, 0.95) !important;
+  border: 2px solid var(--cyan-main) !important;
+  border-radius: 4px !important;
+  box-shadow: 
+    inset 0 1px 0 rgba(0, 255, 230, 0.3),
+    0 0 15px rgba(0, 255, 230, 0.2) !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+.locations > div:last-child button:hover:not(:disabled) {
+  color: #0a0e12 !important;
+  background: linear-gradient(135deg, var(--cyan-main) 0%, var(--teal-main) 100%) !important;
+  border-color: var(--cyan-bright) !important;
+  box-shadow: 
+    0 4px 20px rgba(0, 255, 230, 0.4),
+    0 0 30px var(--cyan-glow) !important;
+  transform: translateY(-2px) !important;
+}
+
+.locations > div:last-child button:disabled {
+  opacity: 0.3 !important;
+  cursor: not-allowed !important;
+  border-color: rgba(0, 255, 230, 0.2) !important;
+  box-shadow: none !important;
+}
+
+/* === 載入與錯誤狀態 === */
+.locations .animate-pulse {
+  animation: pulse 2s ease-in-out infinite !important;
+  background: rgba(18, 22, 26, 0.8) !important;
+  border: 2px solid var(--cyan-main) !important;
+  border-radius: 6px !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.locations .animate-pulse::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(0, 255, 230, 0.3), 
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  to { left: 100%; }
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    opacity: 0.6; 
+    box-shadow: 0 0 20px rgba(0, 255, 230, 0.3);
+  }
+  50% { 
+    opacity: 1; 
+    box-shadow: 0 0 40px rgba(0, 255, 230, 0.5);
+  }
+}
+
+/* === 響應式 === */
+@media (max-width: 1024px) {
+  .locations {
+    padding: 0 16px;
+  }
+
+  .locations-control-bar {
+    padding: 24px !important;
+    gap: 20px !important;
+  }
+
+  .locations-params {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+    gap: 16px !important;
+  }
+
+  .locations-param {
+    padding: 16px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .locations {
+    padding: 0 12px;
+  }
+
+  .locations-control-bar {
+    grid-template-columns: 1fr !important;
+    padding: 20px !important;
+    gap: 16px !important;
+  }
+
+  .locations-params {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .locations-param {
+    padding: 16px !important;
+  }
+
+  .locations-input {
+    padding: 12px 16px !important;
+    font-size: 15px !important;
+  }
+
+  .locations-apply-button {
+    max-width: 100% !important;
+    padding: 14px 24px !important;
+    font-size: 14px !important;
+  }
+
+  .locations th,
+  .locations td {
+    padding: 14px 16px !important;
+    font-size: 13px !important;
+  }
+
+  .locations th {
+    letter-spacing: 1px !important;
+  }
+  
+  .locations > div:last-child {
+    padding: 16px 20px !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  .locations > div:last-child button {
+    width: 100%;
+  }
+}

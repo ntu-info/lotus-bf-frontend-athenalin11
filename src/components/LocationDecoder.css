@@ -1,0 +1,459 @@
+/* LocationDecoder.css - Dark Sci-Fi Medical Lab Style */
+
+.location-decoder {
+  width: 100%;
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(10, 14, 18, 0.95) 0%, rgba(18, 22, 26, 0.95) 100%);
+  border: 1px solid var(--cyan-dim);
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+/* === Header === */
+.decoder-header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.decoder-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--cyan-bright);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0 0 8px 0;
+  text-shadow: 0 0 20px rgba(0, 255, 230, 0.5);
+}
+
+.decoder-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* === Coordinate Inputs === */
+.decoder-inputs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) auto;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: end;
+}
+
+.decoder-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.decoder-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.decoder-input {
+  padding: 12px 16px;
+  font-size: 16px;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: var(--cyan-bright);
+  background: rgba(8, 18, 28, 0.95);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 4px;
+  outline: none;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.decoder-input:hover {
+  border-color: rgba(0, 229, 255, 0.5);
+}
+
+.decoder-input:focus {
+  border-color: var(--cyan-bright);
+  box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.1);
+  background: rgba(8, 18, 28, 1);
+}
+
+/* === Search Button === */
+.decoder-button {
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bg-dark);
+  background: linear-gradient(135deg, var(--cyan) 0%, var(--teal) 100%);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0, 255, 230, 0.3);
+}
+
+.decoder-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 255, 230, 0.5);
+}
+
+.decoder-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.decoder-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.decoder-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.decoder-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(10, 14, 18, 0.3);
+  border-top-color: var(--bg-dark);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* === Preset Locations === */
+.decoder-presets {
+  padding: 20px;
+  background: rgba(0, 255, 230, 0.03);
+  border: 1px solid rgba(0, 255, 230, 0.15);
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.decoder-presets-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.decoder-presets-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--cyan);
+  flex-shrink: 0;
+}
+
+.decoder-presets-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.decoder-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.decoder-preset-btn {
+  padding: 12px 14px;
+  font-size: 13px;
+  text-align: left;
+  color: var(--cyan);
+  background: rgba(18, 22, 26, 0.8);
+  border: 1px solid rgba(0, 255, 230, 0.3);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.decoder-preset-btn:hover {
+  background: rgba(0, 255, 230, 0.15);
+  border-color: var(--cyan-bright);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 255, 230, 0.2);
+}
+
+.decoder-preset-name {
+  font-weight: 600;
+  color: var(--cyan-bright);
+  font-size: 14px;
+}
+
+.decoder-preset-coords {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* === Loading State === */
+.decoder-loading {
+  padding: 24px;
+  text-align: center;
+  background: rgba(0, 255, 230, 0.05);
+  border: 1px solid var(--cyan-dim);
+  border-radius: 6px;
+  margin-top: 20px;
+}
+
+.decoder-loading-bar {
+  height: 3px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--cyan) 50%, 
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: loadingSlide 1.5s ease-in-out infinite;
+  margin-bottom: 16px;
+  border-radius: 2px;
+}
+
+@keyframes loadingSlide {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.decoder-loading p {
+  margin: 8px 0;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.decoder-loading-note {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* === Error Message === */
+.decoder-error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: rgba(255, 80, 80, 0.1);
+  border: 1px solid rgba(255, 80, 80, 0.3);
+  border-radius: 6px;
+  margin-top: 20px;
+  color: #ff9999;
+}
+
+.decoder-error-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: #ff6666;
+}
+
+/* === Results === */
+.decoder-results {
+  margin-top: 24px;
+  padding: 20px;
+  background: rgba(0, 255, 230, 0.05);
+  border: 2px solid var(--cyan);
+  border-radius: 8px;
+  box-shadow: 0 0 30px rgba(0, 255, 230, 0.2);
+}
+
+.decoder-results-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--cyan-dim);
+}
+
+.decoder-results-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--cyan-bright);
+  flex-shrink: 0;
+}
+
+.decoder-results-header h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--cyan-bright);
+  flex: 1;
+}
+
+.decoder-results-header p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-family: 'Courier New', monospace;
+}
+
+/* === Results List === */
+.decoder-results-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.decoder-result-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(18, 22, 26, 0.8);
+  border: 1px solid rgba(0, 255, 230, 0.2);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.decoder-result-item:hover {
+  background: rgba(0, 255, 230, 0.1);
+  border-color: var(--cyan);
+  transform: translateX(4px);
+}
+
+.decoder-result-term {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.decoder-result-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--bg-dark);
+  background: var(--cyan);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.decoder-result-btn:hover {
+  background: var(--cyan-bright);
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(0, 255, 230, 0.4);
+}
+
+.decoder-result-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* === Empty State === */
+.decoder-empty {
+  text-align: center;
+  padding: 40px 20px;
+  margin-top: 20px;
+  background: rgba(0, 255, 230, 0.03);
+  border: 1px dashed var(--cyan-dim);
+  border-radius: 8px;
+}
+
+.decoder-empty-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--cyan-dim);
+  margin: 0 auto 16px;
+  opacity: 0.6;
+}
+
+.decoder-empty p {
+  margin: 8px 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.decoder-empty-hint {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* === Responsive Design === */
+@media (max-width: 968px) {
+  .decoder-inputs {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .decoder-button {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .location-decoder {
+    padding: 16px;
+  }
+
+  .decoder-title {
+    font-size: 18px;
+  }
+
+  .decoder-inputs {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .decoder-input {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .decoder-button {
+    padding: 12px 20px;
+  }
+
+  .decoder-presets {
+    padding: 16px;
+  }
+
+  .decoder-presets-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .decoder-preset-btn {
+    padding: 12px;
+    text-align: center;
+    align-items: center;
+  }
+
+  .decoder-results {
+    padding: 16px;
+  }
+
+  .decoder-result-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .decoder-result-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
